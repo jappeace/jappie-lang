@@ -1,0 +1,15 @@
+; comment
+;
+; identity
+([x] x)
+
+; app
+(([x] x) ([y] y))
+
+
+; ski
+; s 
+([f] ([g] ([x] ((f x) (g x)))))
+
+;k (aka const)
+([x] ([y] x))
