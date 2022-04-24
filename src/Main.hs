@@ -1,7 +1,7 @@
 
 module Main where
 
-import qualified Template
+import qualified JappieLang
 
 main :: IO ()
-main = Template.main
+main = error "PL don't run"

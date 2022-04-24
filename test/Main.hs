@@ -1,40 +1,33 @@
 module Main where
 
 import Test.Tasty
-import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit
+import JappieLang
+import Text.Trifecta
+import Prettyprinter.Internal
+import Prettyprinter.Render.Terminal.Internal
 
 import Data.List(sort)
-import qualified Template
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain unitTests
 
-tests :: TestTree
-tests = testGroup "Tests" [qcProps, unitTests]
-
-qcProps :: TestTree
-qcProps = testGroup "(checked by QuickCheck)"
-  [ QC.testProperty "sort == sort . reverse" $
-      \list -> sort (list :: [Int]) == sort (reverse list)
-  , QC.testProperty "Fermat's little theorem" $
-      \x -> ((x :: Integer)^zeven  - x) `mod` zeven == 0
-  ]
-  where
-    zeven :: Integer
-    zeven = 7
-
-oneTwoThree :: [Int]
-oneTwoThree = [1, 2, 3]
+toSuccess :: Result a -> a
+toSuccess = \case
+  Success a -> a
+  Failure err -> error $ show err
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-  [ testCase "List comparison (different length)" $
-       oneTwoThree `compare` [1,2] @?= GT
-
-  -- the following test does not hold
-  , testCase "List comparison (same length)" $
-      oneTwoThree `compare` [1,2,3] @?= EQ
-  , testCase "run main" $ do
-      Template.main
+  [
+    testCase "parse a lambda" $
+       toSuccess (parseString parseExpr mempty "([x] x)") @?= (Lam (MkName "x") (var "x"))
+  , testCase "parse a var" $
+       toSuccess (parseString parseExpr mempty "x") @?= ( (var "x"))
+  , testCase "parse an app" $
+       toSuccess (parseString parseExpr mempty "([x] x)([y] y)") @?= ( (App (Lam (MkName "x") (var "x")) (Lam (MkName "y") (var "y"))))
+  , testCase "parse a comment" $
+       toSuccess (parseString parseExpr mempty "; xxxx") @?= ( (Comment " xxxx"))
+  , testCase "parse a comment" $
+       toSuccess (parseString parseExpr mempty "; xxxx ([x] x)") @?= ( (Comment " xxxx ([x] x"))
   ]
