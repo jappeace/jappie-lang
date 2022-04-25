@@ -7,4 +7,4 @@
 
 > xxxx
 
-A basic language.
+A basic language build around the lambda calcules.

@@ -26,16 +26,19 @@ data Expr = Var Name
           deriving (Eq, Show)
 -- http://dev.stephendiehl.com/fun/003_lambda_calculus.html
 parseExpr :: Parser Expr
-parseExpr = parseVar <|> parseApp <|> parseLam <|> comment
+parseExpr = parseVar <|> try parseApp <|> try parseLam <|> comment
 
 parseApp :: Parser Expr
 parseApp = parens $ do
-  one <- trace "parsing app expr" parseExpr
-  two <- trace "parsing app expr2" parseExpr
+  one <- parseExpr
+  two <- parseExpr
   pure (App one two)
 
 parseLam :: Parser Expr
-parseLam = parens $ Lam <$> brackets parseIdent <*> parseExpr
+parseLam = parens $ do
+  bindings <- brackets parseIdent
+  body <- parseExpr
+  pure $ Lam bindings body
 
 parseVar :: Parser Expr
 parseVar = Var <$> parseIdent
