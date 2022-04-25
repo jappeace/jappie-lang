@@ -7,15 +7,12 @@ module JappieLang
   )
 where
 
-import Debug.Trace
 import Control.Monad
 import Text.Parser.Token.Style
 import Text.Trifecta
-import Text.Parser.Combinators
 import qualified Data.Text as T
 import Data.Text(Text)
 import Control.Applicative
-import Text.Parser.Token
 
 newtype Name = MkName Text
   deriving (Eq, Show)
@@ -57,9 +54,10 @@ var = Var . MkName
 -- https://hackage.haskell.org/package/parsers-0.12.10/docs/Text-Parser-Combinators.html#v:endBy
 comment :: Parser Expr
 comment = do
-  char ';'
+  void $ char ';'
   chars <- many (notChar '\n')
   void newline <|> eof
   pure (Comment (T.pack (chars)))
 
+idStyle :: IdentifierStyle Parser
 idStyle    = emptyIdents

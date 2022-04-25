@@ -4,11 +4,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import JappieLang
 import Text.Trifecta
-import Prettyprinter.Internal
-import Prettyprinter.Render.Terminal.Internal
 import Control.Monad.IO.Class
-
-import Data.List(sort)
 
 main :: IO ()
 main = defaultMain $ testGroup "tests" [unitTests, langFiles]
@@ -16,7 +12,7 @@ main = defaultMain $ testGroup "tests" [unitTests, langFiles]
 toSuccess :: Result a -> a
 toSuccess = \case
   Success a -> a
-  Failure err -> error $ show err
+  Failure err' -> error $ show err'
 
 unitTests :: TestTree
 unitTests = testGroup "unit"

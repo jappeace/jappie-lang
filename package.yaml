@@ -22,7 +22,6 @@ ghc-options:
     - -fwarn-tabs
     - -Wpartial-fields
     - -fdefer-diagnostics
-    - -Wunused-packages
 
 # from https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/
 default-extensions:
@@ -56,11 +55,11 @@ dependencies:
 - trifecta
 - parsers
 - text
-- prettyprinter-ansi-terminal
-- prettyprinter
 
 library:
   source-dirs: src
+  ghc-options: 
+    - -Wunused-packages
 
 executables:
   exe:
@@ -78,6 +77,5 @@ tests:
     - test
     dependencies:
     - tasty
-    - tasty-quickcheck
     - tasty-hunit
     - jappie-lang
