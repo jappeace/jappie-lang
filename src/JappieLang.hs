@@ -1,5 +1,6 @@
 module JappieLang
   ( parseExpr
+  , parseExprs
   , var
   , Expr(..)
   , Name(..)
@@ -24,6 +25,10 @@ data Expr = Var Name
           | Lam Name Expr
           | Comment Text
           deriving (Eq, Show)
+
+parseExprs :: Parser [Expr]
+parseExprs = some parseExpr
+
 -- http://dev.stephendiehl.com/fun/003_lambda_calculus.html
 parseExpr :: Parser Expr
 parseExpr = parseVar <|> try parseApp <|> try parseLam <|> comment
@@ -52,7 +57,7 @@ var = Var . MkName
 -- https://hackage.haskell.org/package/parsers-0.12.10/docs/Text-Parser-Combinators.html#v:endBy
 comment :: Parser Expr
 comment = do
-  symbolic ';'
+  char ';'
   chars <- many (notChar '\n')
   void newline <|> eof
   pure (Comment (T.pack (chars)))
