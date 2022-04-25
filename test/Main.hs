@@ -25,9 +25,9 @@ unitTests = testGroup "Unit tests"
   , testCase "parse a var" $
        toSuccess (parseString parseExpr mempty "x") @?= ( (var "x"))
   , testCase "parse an app" $
-       toSuccess (parseString parseExpr mempty "([x] x)([y] y)") @?= ( (App (Lam (MkName "x") (var "x")) (Lam (MkName "y") (var "y"))))
+       toSuccess (parseString parseExpr mempty "(([x] x) ([y] y))") @?= ( (App (Lam (MkName "x") (var "x")) (Lam (MkName "y") (var "y"))))
   , testCase "parse a comment" $
-       toSuccess (parseString parseExpr mempty "; xxxx") @?= ( (Comment " xxxx"))
+       toSuccess (parseString parseExpr mempty "; xxxx") @?= ( (Comment "xxxx"))
   , testCase "parse a comment" $
-       toSuccess (parseString parseExpr mempty "; xxxx ([x] x)") @?= ( (Comment " xxxx ([x] x"))
+       toSuccess (parseString parseExpr mempty "; xxxx ([x] x)") @?= ( (Comment "xxxx ([x] x)"))
   ]

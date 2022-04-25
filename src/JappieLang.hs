@@ -6,9 +6,12 @@ module JappieLang
   )
 where
 
+import Control.Monad
+import Text.Parser.Token.Style
 import Text.Trifecta
 import Text.Parser.Combinators
-import Data.Text
+import qualified Data.Text as T
+import Data.Text(Text)
 import Control.Applicative
 import Text.Parser.Token
 
@@ -22,7 +25,7 @@ data Expr = Var Name
           deriving (Eq, Show)
 -- http://dev.stephendiehl.com/fun/003_lambda_calculus.html
 parseExpr :: Parser Expr
-parseExpr = parseLam <|> parseVar <|> comment
+parseExpr = parseVar <|> (parseLam <|> parseApp) <|> comment
 
 parseApp :: Parser Expr
 parseApp = parens $ do
@@ -38,7 +41,7 @@ parseLam = parens $ do
         pure (Lam name body)
 
 parseVar :: Parser Expr
-parseVar = var <$> stringLiteral
+parseVar = var <$> ident idStyle
 
 var :: Text -> Expr
 var = Var . MkName
@@ -47,4 +50,8 @@ var = Var . MkName
 comment :: Parser Expr
 comment = do
   symbolic ';'
-  pure (Comment "")
+  chars <- many (notChar '\n')
+  void newline <|> eof
+  pure (Comment (T.pack (chars)))
+
+idStyle    = emptyIdents
