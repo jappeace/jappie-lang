@@ -6,6 +6,7 @@ module JappieLang
   )
 where
 
+import Debug.Trace
 import Control.Monad
 import Text.Parser.Token.Style
 import Text.Trifecta
@@ -25,23 +26,22 @@ data Expr = Var Name
           deriving (Eq, Show)
 -- http://dev.stephendiehl.com/fun/003_lambda_calculus.html
 parseExpr :: Parser Expr
-parseExpr = parseVar <|> (parseLam <|> parseApp) <|> comment
+parseExpr = parseVar <|> parseApp <|> parseLam <|> comment
 
 parseApp :: Parser Expr
 parseApp = parens $ do
-  one <- parseExpr
-  two <- parseExpr
+  one <- trace "parsing app expr" parseExpr
+  two <- trace "parsing app expr2" parseExpr
   pure (App one two)
 
-
 parseLam :: Parser Expr
-parseLam = parens $ do
-        Var name <- brackets parseVar
-        body <- parseExpr
-        pure (Lam name body)
+parseLam = parens $ Lam <$> brackets parseIdent <*> parseExpr
 
 parseVar :: Parser Expr
-parseVar = var <$> ident idStyle
+parseVar = Var <$> parseIdent
+
+parseIdent :: Parser Name
+parseIdent = MkName <$> ident idStyle
 
 var :: Text -> Expr
 var = Var . MkName
