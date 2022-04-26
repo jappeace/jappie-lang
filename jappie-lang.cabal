@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      JappieLang
+      JappieLang.Eval
+      JappieLang.Expression
+      JappieLang.Parser
       Main
   other-modules:
       Paths_jappie_lang
@@ -62,7 +64,9 @@ library
 executable exe
   main-is: Main.hs
   other-modules:
-      JappieLang
+      JappieLang.Eval
+      JappieLang.Expression
+      JappieLang.Parser
       Paths_jappie_lang
   hs-source-dirs:
       src

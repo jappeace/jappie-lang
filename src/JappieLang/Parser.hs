@@ -1,9 +1,6 @@
-module JappieLang
-  ( parseExpr
-  , parseExprs
-  , var
-  , Expr(..)
-  , Name(..)
+module JappieLang.Parser
+  ( parseExpression
+  , parseExpressions
   )
 where
 
@@ -13,46 +10,35 @@ import Text.Trifecta
 import qualified Data.Text as T
 import Data.Text(Text)
 import Control.Applicative
+import JappieLang.Expression
 
-newtype Name = MkName Text
-  deriving (Eq, Show)
-
-data Expr = Var Name
-          | App Expr Expr
-          | Lam Name Expr
-          | Comment Text
-          deriving (Eq, Show)
-
-parseExprs :: Parser [Expr]
-parseExprs = some parseExpr
+parseExpressions :: Parser [Expression]
+parseExpressions = some parseExpression
 
 -- http://dev.stephendiehl.com/fun/003_lambda_calculus.html
-parseExpr :: Parser Expr
-parseExpr = parseVar <|> try parseApp <|> try parseLam <|> comment
+parseExpression :: Parser Expression
+parseExpression = parseVar <|> try parseApp <|> try parseLam <|> comment
 
-parseApp :: Parser Expr
+parseApp :: Parser Expression
 parseApp = parens $ do
-  one <- parseExpr
-  two <- parseExpr
+  one <- parseExpression
+  two <- parseExpression
   pure (App one two)
 
-parseLam :: Parser Expr
+parseLam :: Parser Expression
 parseLam = parens $ do
   bindings <- brackets parseIdent
-  body <- parseExpr
+  body <- parseExpression
   pure $ Lam bindings body
 
-parseVar :: Parser Expr
+parseVar :: Parser Expression
 parseVar = Var <$> parseIdent
 
 parseIdent :: Parser Name
 parseIdent = MkName <$> ident idStyle
 
-var :: Text -> Expr
-var = Var . MkName
-
 -- https://hackage.haskell.org/package/parsers-0.12.10/docs/Text-Parser-Combinators.html#v:endBy
-comment :: Parser Expr
+comment :: Parser Expression
 comment = do
   void $ char ';'
   chars <- many (notChar '\n')
