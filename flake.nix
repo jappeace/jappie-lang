@@ -16,7 +16,7 @@
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       hpkgs = pkgs.haskell.packages.ghc944.override {
         overrides = hnew: hold: {
-          template-project = hnew.callCabal2nix "template-project" ./. { };
+          jappie-lang  = hnew.callCabal2nix "jappie-lang" ./. { };
         };
       };
     in
@@ -24,7 +24,7 @@
       defaultPackage.x86_64-linux =  hpkgs.template-project;
       inherit pkgs;
       devShell.x86_64-linux = hpkgs.shellFor {
-        packages = ps : [ ps."template-project" ];
+        packages = ps : [ ps."jappie-lang" ];
         withHoogle = true;
 
         buildInputs = [
