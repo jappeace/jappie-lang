@@ -29,6 +29,7 @@
 
         buildInputs = [
           pkgs.ghcid
+          pkgs.haskellPackages.hasktags
           pkgs.cabal-install
         ];
       };

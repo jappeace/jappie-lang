@@ -5,15 +5,12 @@ module JappieLang.Expression
   )
 where
 
-import Control.Monad
-import Text.Parser.Token.Style
-import Text.Trifecta
-import qualified Data.Text as T
 import Data.Text(Text)
-import Control.Applicative
+import Data.String
 
 newtype Name = MkName Text
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
+  deriving newtype IsString
 
 data Expression = Var Name
           | App Expression Expression

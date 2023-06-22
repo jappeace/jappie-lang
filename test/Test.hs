@@ -22,8 +22,10 @@ unitTests = testGroup "tests" [
   ],
   testGroup "eval"
   [testCase "App free variable y to x" $
-    eval (App (Lam (MkName "x") (var "x")) (lam (mkname "y") (var "y"))) @?= Right (Lam (MkName "y") (var "y"))
+    eval (App (Lam (MkName "x") (var "x")) (Lam "y" (var "y"))) @?= Right (Lam (MkName "y") (var "y"))
   ]
+  , testCase "lambda " $  eval (Lam (MkName "x") (var "x")) @?= Right (Lam (MkName "x") (var "x"))
+  , testCase "var " $ eval (var "x") @?= Right (var "x")
   ]
 
 

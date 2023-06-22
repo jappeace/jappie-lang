@@ -18,12 +18,7 @@ ghcid: clean
 	ghcid \
 		--test="main" \
 		--command="ghci" \
-		test/Main
-ghcid-app: clean
-	ghcid \
-		--main="main" \
-		--command="ghci" \
-		app/Main
+		test/Test
 
 ghci:
 	ghci app/exe

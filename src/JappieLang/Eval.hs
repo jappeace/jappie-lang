@@ -16,7 +16,7 @@ eval = \case
   Var name -> Right (Var name)
   Comment txt -> Right (Comment txt)
   App expr1 expr2 -> apply expr1 expr2
-  Lam name expr -> Right expr
+  Lam name expr -> Right (Lam name expr)
 
 apply :: Expression -> Expression -> Either EvalError Expression
 apply appliedTo appliedWith = case appliedTo of
@@ -31,4 +31,4 @@ substitute name appliedTo appliedWith = case appliedTo of
   Var name' -> if name == name' then Right appliedWith else Right (Var name')
   Comment txt -> Right (Comment txt)
   App expr1 expr2 -> App <$> (substitute name expr1 appliedWith) <*> (substitute name expr2 appliedWith)
-  Lam name expr -> Lam name <$> (substitute name expr appliedWith)
+  Lam name' expr -> Lam name' <$> (substitute name expr appliedWith)

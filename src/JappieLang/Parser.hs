@@ -8,7 +8,6 @@ import Control.Monad
 import Text.Parser.Token.Style
 import Text.Trifecta
 import qualified Data.Text as T
-import Data.Text(Text)
 import Control.Applicative
 import JappieLang.Expression
 
