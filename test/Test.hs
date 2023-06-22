@@ -1,5 +1,3 @@
-module Main where
-
 import Test.Tasty
 import Test.Tasty.HUnit
 import JappieLang.Parser
@@ -23,8 +21,8 @@ unitTests = testGroup "tests" [
   , langFiles
   ],
   testGroup "eval"
-  [testCase "App" $
-    eval (App (Lam (MkName "x") (var "x")) (Lam (MkName "y") (var "y"))) @?= Right (Lam (MkName "y") (var "y"))
+  [testCase "App free variable y to x" $
+    eval (App (Lam (MkName "x") (var "x")) (lam (mkname "y") (var "y"))) @?= Right (Lam (MkName "y") (var "y"))
   ]
   ]
 
