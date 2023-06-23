@@ -9,35 +9,36 @@ import Text.Parser.Token.Style
 import Text.Trifecta
 import qualified Data.Text as T
 import Control.Applicative
-import JappieLang.Expression
+import JappieLang.SyntaxTree.Parsed
+import JappieLang.SyntaxTree.Name
 
-parseExpressions :: Parser [Expression]
+parseExpressions :: Parser [ParsedExpression]
 parseExpressions = some parseExpression
 
 -- http://dev.stephendiehl.com/fun/003_lambda_calculus.html
-parseExpression :: Parser Expression
+parseExpression :: Parser ParsedExpression
 parseExpression = parseVar <|> try parseApp <|> try parseLam <|> comment
 
-parseApp :: Parser Expression
+parseApp :: Parser ParsedExpression
 parseApp = parens $ do
   one <- parseExpression
   two <- parseExpression
   pure (App one two)
 
-parseLam :: Parser Expression
+parseLam :: Parser ParsedExpression
 parseLam = parens $ do
   bindings <- brackets parseIdent
   body <- parseExpression
   pure $ Lam bindings body
 
-parseVar :: Parser Expression
+parseVar :: Parser ParsedExpression
 parseVar = Var <$> parseIdent
 
 parseIdent :: Parser Name
 parseIdent = MkName <$> ident idStyle
 
 -- https://hackage.haskell.org/package/parsers-0.12.10/docs/Text-Parser-Combinators.html#v:endBy
-comment :: Parser Expression
+comment :: Parser ParsedExpression
 comment = do
   void $ char ';'
   chars <- many (notChar '\n')
