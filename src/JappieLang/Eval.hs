@@ -3,7 +3,6 @@ module JappieLang.Eval
   )
 where
 
-import Data.Text(Text)
 import JappieLang.SyntaxTree.Core
 import JappieLang.SyntaxTree.Name
 
