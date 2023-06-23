@@ -21,7 +21,7 @@
       };
     in
     {
-      defaultPackage.x86_64-linux =  hpkgs.template-project;
+      defaultPackage.x86_64-linux =  hpkgs.jappie-lang;
       inherit pkgs;
       devShell.x86_64-linux = hpkgs.shellFor {
         packages = ps : [ ps."jappie-lang" ];
