@@ -9,7 +9,6 @@ import JappieLang.SyntaxTree.Name
 
 data EvalError = FreeVariable Name
                | ApplyingNameTo Name CoreExpression
-               | ApplyingCommentTo Text CoreExpression
   deriving (Eq, Show)
 
 eval :: CoreExpression -> Either EvalError CoreExpression
