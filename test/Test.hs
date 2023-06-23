@@ -6,7 +6,7 @@ import Control.Monad.IO.Class
 import qualified JappieLang.SyntaxTree.Parsed as Parsed
 import qualified JappieLang.SyntaxTree.Core as Core
 import JappieLang.Eval
-import Control.Lens
+import TestOrphans()
 
 main :: IO ()
 main = defaultMain unitTests
@@ -47,6 +47,7 @@ parserUnit =  testGroup "unit" [
        toSuccess (parseString parseExpression mempty ";") @?= Parsed.Comment ""
   ]
 
+
 langFiles :: TestTree
 langFiles = testGroup "Language files"
   [ testGroup "Parse expressions, eg the direct trifecta interface (old)"
@@ -74,7 +75,7 @@ langFiles = testGroup "Language files"
   ], testGroup "Parse file"
   [ testCase "./jappie-lang/lambda.jappie" $ do
       res <- liftIO $ parseFile "test/jappie-lang/lambda.jappie"
-      (res ^? _Success) @?= Just
+      res @?= Success
         (Parsed.App
         (Parsed.App
         (Parsed.App
@@ -98,5 +99,10 @@ langFiles = testGroup "Language files"
         (Parsed.Lam "f" (Parsed.Lam "g" (Parsed.Lam "x" (Parsed.App (Parsed.App (Parsed.Var "f") (Parsed.Var "x")) (Parsed.App (Parsed.Var "g") (Parsed.Var "x")))))))
         (Parsed.Comment "k (aka const)"))
         (Parsed.Lam "x" (Parsed.Lam "y" (Parsed.Var "x"))))
+  , testCase "./jappie-lang/multi-line.jappie" $ do
+      res <- liftIO $ parseFile "test/jappie-lang/multi-line.jappie"
+      res @?= Success
+        (Parsed.App (Parsed.App mempty (Parsed.Comment " identity"))
+        (Parsed.Lam "x" (Parsed.var "x")))
   ]
   ]
