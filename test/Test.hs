@@ -6,6 +6,7 @@ import Control.Monad.IO.Class
 import qualified JappieLang.SyntaxTree.Parsed as Parsed
 import qualified JappieLang.SyntaxTree.Core as Core
 import JappieLang.Eval
+import Control.Lens
 
 main :: IO ()
 main = defaultMain unitTests
@@ -48,6 +49,7 @@ parserUnit =  testGroup "unit" [
 
 langFiles :: TestTree
 langFiles = testGroup "Language files"
+  [ testGroup "Parse expressions, eg the direct trifecta interface (old)"
   [ testCase "./jappie-lang/lambda.jappie" $ do
       res <- liftIO $ parseFromFile parseExpressions "test/jappie-lang/lambda.jappie"
       res @?= Just
@@ -69,4 +71,32 @@ langFiles = testGroup "Language files"
         [ Parsed.Comment " identity"
         , Parsed.Lam "x" (Parsed.var "x")
         ]
+  ], testGroup "Parse file"
+  [ testCase "./jappie-lang/lambda.jappie" $ do
+      res <- liftIO $ parseFile "test/jappie-lang/lambda.jappie"
+      (res ^? _Success) @?= Just
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+        (Parsed.App
+          (Parsed.Comment "")
+          (Parsed.Comment " comment"))
+          (Parsed.Comment ""))
+        ( Parsed.Comment " identity"))
+        ( Parsed.Lam "x" (Parsed.Var "x")))
+        (Parsed.Comment " app"))
+        (Parsed.App (Parsed.Lam "x" (Parsed.Var "x")) (Parsed.Lam "y" (Parsed.Var "y"))))
+        (Parsed.Comment " ski"))
+        (Parsed.Comment " s "))
+        (Parsed.Lam "f" (Parsed.Lam "g" (Parsed.Lam "x" (Parsed.App (Parsed.App (Parsed.Var "f") (Parsed.Var "x")) (Parsed.App (Parsed.Var "g") (Parsed.Var "x")))))))
+        (Parsed.Comment "k (aka const)"))
+        (Parsed.Lam "x" (Parsed.Lam "y" (Parsed.Var "x"))))
+  ]
   ]

@@ -16,7 +16,7 @@ import Data.Text(Text)
 import Control.Applicative
 import JappieLang.SyntaxTree.Parsed
 import JappieLang.SyntaxTree.Name
-import Data.Foldable(fold)
+import Data.Foldable(foldl')
 
 -- TODO get the delta for all expressions and record in ast
 -- https://hackage.haskell.org/package/trifecta-2.1.2/docs/Text-Trifecta-Combinators.html#v:position
@@ -35,7 +35,7 @@ parseText txt = toTree <$> (parseByteString parseExpressions mempty (Text.encode
 -- | Makes a tree out of a list of parsedExpressions.
 --   this how to deal with files
 toTree :: [ParsedExpression] -> ParsedExpression
-toTree = fold
+toTree list = foldl' App mempty list
 
 parseExpressions :: Parser [ParsedExpression]
 parseExpressions = some parseExpression
