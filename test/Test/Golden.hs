@@ -9,9 +9,11 @@ import Test.Tasty.Golden
 
 
 goldenTests :: IO TestTree
-goldenTests = pure goldenRuns
+goldenTests = do
+  filePaths <- fmap (fmap $ (takeWhile (/= '.'))) $ findByExtension [".expected"] "test/golden"
+  print filePaths
+  pure $ testGroup "Golden runs" (goldenRun <$> filePaths)
 
-goldenRuns :: TestTree
-goldenRuns = testGroup "Golden runs" [
-  goldenVsString "eval-identity" "test/golden/identity.expected" (Text.encodeUtf8 <$> runFilePrint "test/golden/identity.jappie")
-  ]
+goldenRun :: FilePath -> TestTree
+goldenRun path =
+  goldenVsString path (path <> ".expected") (Text.encodeUtf8 <$> runFilePrint (path <>".jappie"))
