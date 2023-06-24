@@ -1,13 +1,13 @@
 module JappieLang.Eval
   (eval
+  , EvalError(..)
   )
 where
 
 import JappieLang.SyntaxTree.Core
 import JappieLang.SyntaxTree.Name
 
-data EvalError = FreeVariable Name
-               | ApplyingNameTo Name CoreExpression
+data EvalError = ApplyingNameTo Name CoreExpression
   deriving (Eq, Show)
 
 eval :: CoreExpression -> Either EvalError CoreExpression
@@ -18,8 +18,10 @@ eval = \case
 
 apply :: CoreExpression -> CoreExpression -> Either EvalError CoreExpression
 apply appliedTo appliedWith = case appliedTo of
-  Var name -> Left (ApplyingNameTo name appliedTo)
-  App expr1 expr2 -> (apply expr1 expr2) >>= \x -> apply x appliedWith
+  Var name -> Left (ApplyingNameTo name appliedWith) -- eg, a function call?
+  -- eg (([x] x) ([y] y) ([z] z))
+  App expr1 expr2 ->
+    (apply expr1 expr2) >>= \x -> apply x appliedWith
   Lam name expr -> (substitute name expr appliedWith)
 
 -- so all occurences of Name in first argument get replaced by the second argument

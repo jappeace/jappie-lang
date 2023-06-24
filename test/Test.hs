@@ -28,6 +28,7 @@ unitTests = testGroup "tests" [
   ]
   , testCase "lambda " $  eval (Core.Lam "x" (Core.var "x")) @?= Right (Core.Lam "x" (Core.var "x"))
   , testCase "var " $ eval (Core.var "x") @?= Right (Core.var "x")
+  , testCase "apply name" $ eval (Core.App (Core.var "x") (Core.var "y")) @?= Left (ApplyingNameTo "x" (Core.var "y"))
   ]
 
 
