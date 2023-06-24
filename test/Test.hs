@@ -17,23 +17,23 @@ import Test.Tasty.Hedgehog
 import JappieLang.SyntaxTree.Name
 import qualified Hedgehog.Range as Range
 import Data.Text(pack)
+import qualified Data.Text.Lazy.Encoding as Text
+import JappieLang.Run
+import Test.Tasty.Golden
 
 main :: IO ()
 main = defaultMain unitTests
-
-toSuccess :: Result a -> a
-toSuccess = \case
-  Success a -> a
-  Failure err' -> error $ show err'
-
 
 genName :: Hedgehog.Gen Name
 genName = MkName <$> Gen.text (Range.constant 1 20) Gen.alpha
 
 generateCore :: Hedgehog.Gen CoreExpression
-generateCore = Gen.frequency [(1, Core.Var <$> genName),
-                          (1, Core.App <$> generateCore <*> generateCore),
-                          (1, Core.Lam <$> genName <*> generateCore)
+generateCore = generateCore' 0
+
+generateCore' :: Int -> Hedgehog.Gen CoreExpression
+generateCore' x = Gen.frequency [(1, Core.Var <$> genName),
+                          (max 0 (4 - x), Core.App <$> generateCore' (x + 1) <*> generateCore' (x + 1)),
+                          (max 0 (3 - x), Core.Lam <$> genName <*> generateCore' (x + 1))
                          ]
 
 unitTests :: TestTree
@@ -62,22 +62,23 @@ unitTests = testGroup "tests" [
   , testCase "lambda " $  eval (Core.Lam "x" (Core.var "x")) @?= Right (Core.Lam "x" (Core.var "x"))
   , testCase "var " $ eval (Core.var "x") @?= Right (Core.var "x")
   , testCase "apply name" $ eval (Core.App (Core.var "x") (Core.var "y")) @?= Left (ApplyingNameTo "x" (Core.var "y"))
+  , goldenRuns
   ]
 
 parserUnit :: TestTree
 parserUnit =  testGroup "unit" [
     testCase "parse a lambda" $
-       toSuccess (parseString parseExpression mempty "([x] x)") @?= Parsed.Lam "x" (Parsed.var "x")
+       (parseString parseExpression mempty "([x] x)") @?= Success (Parsed.Lam "x" (Parsed.var "x"))
   , testCase "parse a var" $
-       toSuccess (parseString parseExpression mempty "x") @?= Parsed.var "x"
+       (parseString parseExpression mempty "x") @?= Success (Parsed.var "x")
   , testCase "parse an app" $
-       toSuccess (parseString parseExpression mempty "(([x] x) ([y] y))") @?= Parsed.App (Parsed.Lam "x" (Parsed.var "x")) (Parsed.Lam "y" (Parsed.var "y"))
+       (parseString parseExpression mempty "(([x] x) ([y] y))") @?= Success (Parsed.App (Parsed.Lam "x" (Parsed.var "x")) (Parsed.Lam "y" (Parsed.var "y")))
   , testCase "parse a comment xxxx" $
-       toSuccess (parseString parseExpression mempty "; xxxx") @?= Parsed.Comment " xxxx"
+       (parseString parseExpression mempty "; xxxx") @?= Success (Parsed.Comment " xxxx")
   , testCase "parse a comment with lam" $
-       toSuccess (parseString parseExpression mempty "; xxxx ([x] x)") @?= Parsed.Comment " xxxx ([x] x)"
+       (parseString parseExpression mempty "; xxxx ([x] x)") @?= Success (Parsed.Comment " xxxx ([x] x)")
   , testCase "parse a comment empty" $
-       toSuccess (parseString parseExpression mempty ";") @?= Parsed.Comment ""
+       (parseString parseExpression mempty ";") @?= Success (Parsed.Comment "")
   ]
 
 
@@ -138,4 +139,9 @@ langFiles = testGroup "Language files"
         (Parsed.App (Parsed.App mempty (Parsed.Comment " identity"))
         (Parsed.Lam "x" (Parsed.var "x")))
   ]
+  ]
+
+goldenRuns :: TestTree
+goldenRuns = testGroup "Golden runs" [
+  goldenVsString "eval-identity" "test/golden/identity.expected" (Text.encodeUtf8 <$> runFilePrint "test/golden/identity.jappie")
   ]
