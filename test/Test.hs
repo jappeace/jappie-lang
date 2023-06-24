@@ -5,8 +5,18 @@ import Text.Trifecta
 import Control.Monad.IO.Class
 import qualified JappieLang.SyntaxTree.Parsed as Parsed
 import qualified JappieLang.SyntaxTree.Core as Core
+import JappieLang.SyntaxTree.Core(CoreExpression)
 import JappieLang.Eval
 import TestOrphans()
+import qualified Hedgehog
+import qualified Hedgehog.Gen as Gen
+import JappieLang.Simplify
+import JappieLang.Print
+import Data.Text.Lazy(toStrict)
+import Test.Tasty.Hedgehog
+import JappieLang.SyntaxTree.Name
+import qualified Hedgehog.Range as Range
+import Data.Text(pack)
 
 main :: IO ()
 main = defaultMain unitTests
@@ -16,8 +26,20 @@ toSuccess = \case
   Success a -> a
   Failure err' -> error $ show err'
 
+
+generateCore :: Hedgehog.Gen CoreExpression
+generateCore = Gen.frequency [(1, Core.var <$> Gen.text (Range.constant 1 20) Gen.unicode),
+                          (1, Core.App <$> generateCore <*> generateCore),
+                          (1, Core.Lam . MkName <$> Gen.text (Range.constant 1 20) Gen.unicode <*> generateCore)
+                         ]
+
 unitTests :: TestTree
 unitTests = testGroup "tests" [
+  testGroup "printer" [
+      testProperty "roundTripParse " $ Hedgehog.property $ do
+          xx <- Hedgehog.forAll generateCore
+          Hedgehog.tripping xx (toStrict . printCoreExpression) (fmap (either (Core.var . pack . show) id . simplify) . parseText)
+  ],
   testGroup "parser"
   [ parserUnit
   , langFiles
@@ -30,7 +52,6 @@ unitTests = testGroup "tests" [
   , testCase "var " $ eval (Core.var "x") @?= Right (Core.var "x")
   , testCase "apply name" $ eval (Core.App (Core.var "x") (Core.var "y")) @?= Left (ApplyingNameTo "x" (Core.var "y"))
   ]
-
 
 parserUnit :: TestTree
 parserUnit =  testGroup "unit" [

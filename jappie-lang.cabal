@@ -96,3 +96,5 @@ test-suite unit
     , tasty-hunit
     , text
     , trifecta
+    , hedgehog
+    , tasty-hedgehog
