@@ -19,6 +19,8 @@ import qualified Hedgehog.Range as Range
 import Data.Text(pack)
 import Test.Golden
 
+
+
 main :: IO ()
 main = do
   golden <- goldenTests
@@ -68,6 +70,10 @@ parserUnit :: TestTree
 parserUnit =  testGroup "unit" [
     testCase "parse a lambda" $
        (parseString parseExpression mempty "([x] x)") @?= Success (Parsed.Lam "x" (Parsed.var "x"))
+  , testCase "parse a double binding lambda" $
+       (parseString parseExpression mempty "([x y] x)") @?= Success (Parsed.Lam "x" (Parsed.Lam "y" (Parsed.var "x")))
+  , testCase "parse a nested lambda" $
+       (parseString parseExpression mempty "([y x] ([y] y) x)") @?= Success (Parsed.Lam "y" (Parsed.Lam "x" (Parsed.App (Parsed.Lam "y" (Parsed.var "y")) (Parsed.var "x"))))
   , testCase "parse a var" $
        (parseString parseExpression mempty "x") @?= Success (Parsed.var "x")
   , testCase "parse an app" $
