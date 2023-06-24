@@ -17,7 +17,6 @@ import Control.Applicative
 import JappieLang.SyntaxTree.Parsed
 import JappieLang.SyntaxTree.Name
 import Data.Foldable(foldl')
-import Data.Maybe
 
 -- TODO get the delta for all expressions and record in ast
 -- https://hackage.haskell.org/package/trifecta-2.1.2/docs/Text-Trifecta-Combinators.html#v:position
@@ -39,11 +38,7 @@ toTree :: [ParsedExpression] -> ParsedExpression
 toTree = \case
   [] -> mempty
   one:[] -> one
-  all'@(one:_) -> let
-    reversed = reverse all'
-    last' = fromMaybe one (listToMaybe reversed)
-    in
-    foldl' App last' (reverse $ drop 1 reversed)
+  (one:many') -> foldl' App one many'
 
 parseExpressions :: Parser [ParsedExpression]
 parseExpressions = some parseExpression

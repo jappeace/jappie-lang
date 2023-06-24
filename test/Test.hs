@@ -125,9 +125,7 @@ langFiles = testGroup "Language files"
         (Parsed.App
         (Parsed.App
         (Parsed.App
-        (Parsed.App
-          (Parsed.Comment "")
-          (Parsed.Comment " comment"))
+          (Parsed.Comment " comment")
           (Parsed.Comment ""))
         ( Parsed.Comment " identity"))
         ( Parsed.Lam "x" (Parsed.Var "x")))
@@ -141,7 +139,7 @@ langFiles = testGroup "Language files"
   , testCase "./jappie-lang/multi-line.jappie" $ do
       res <- liftIO $ parseFile "test/jappie-lang/multi-line.jappie"
       res @?= Success
-        (Parsed.App (Parsed.App mempty (Parsed.Comment " identity"))
+        (Parsed.App (Parsed.Comment " identity")
         (Parsed.Lam "x" (Parsed.var "x")))
   ]
   ]
