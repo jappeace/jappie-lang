@@ -9,6 +9,10 @@
 
 A basic language build around the lambda calcules.
 
+# TODO
++ [ ] Make a golden test of output
++ [ ] Get scoping right, currently names are just overwritten even if they're rebound
++ [ ] Add source mapping
 
 # What are newlines
 
