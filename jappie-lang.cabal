@@ -59,6 +59,7 @@ library
   import: common-options
   exposed-modules:
       JappieLang.Eval
+      JappieLang.Run
       JappieLang.SyntaxTree.Parsed 
       JappieLang.SyntaxTree.Name
       JappieLang.SyntaxTree.Core
