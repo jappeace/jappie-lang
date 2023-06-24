@@ -27,10 +27,13 @@ toSuccess = \case
   Failure err' -> error $ show err'
 
 
+genName :: Hedgehog.Gen Name
+genName = MkName <$> Gen.text (Range.constant 1 20) Gen.alpha
+
 generateCore :: Hedgehog.Gen CoreExpression
-generateCore = Gen.frequency [(1, Core.var <$> Gen.text (Range.constant 1 20) Gen.unicode),
+generateCore = Gen.frequency [(1, Core.Var <$> genName),
                           (1, Core.App <$> generateCore <*> generateCore),
-                          (1, Core.Lam . MkName <$> Gen.text (Range.constant 1 20) Gen.unicode <*> generateCore)
+                          (1, Core.Lam <$> genName <*> generateCore)
                          ]
 
 unitTests :: TestTree
@@ -39,6 +42,14 @@ unitTests = testGroup "tests" [
       testProperty "roundTripParse " $ Hedgehog.property $ do
           xx <- Hedgehog.forAll generateCore
           Hedgehog.tripping xx (toStrict . printCoreExpression) (fmap (either (Core.var . pack . show) id . simplify) . parseText)
+
+
+      , testCase "commutativity" $ let
+           expression = Core.App (Core.var "a") (Core.App (Core.var "a") (Core.var "a"))
+          in
+            (fmap simplify $ parseText $ toStrict $ printCoreExpression expression)
+            @?= (Success (Right expression))
+
   ],
   testGroup "parser"
   [ parserUnit

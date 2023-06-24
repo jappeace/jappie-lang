@@ -17,7 +17,7 @@ printCoreExpression = toLazyText . toBuilder
 toBuilder :: CoreExpression -> Builder
 toBuilder = \case
   Var name -> nameToBuilder name
-  App expr1 expr2 -> toBuilder expr1 <> " " <> toBuilder expr2
+  App expr1 expr2 -> "(" <> toBuilder expr1 <> " " <> toBuilder expr2 <> ")"
   Lam name body -> fromText "(["
     <> nameToBuilder name
     <> fromText "] "
