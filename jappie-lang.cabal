@@ -101,3 +101,5 @@ test-suite unit
     , hedgehog
     , tasty-hedgehog
     , tasty-golden
+    , prettyprinter-ansi-terminal
+    , prettyprinter
