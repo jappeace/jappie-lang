@@ -17,12 +17,12 @@ import Test.Tasty.Hedgehog
 import JappieLang.SyntaxTree.Name
 import qualified Hedgehog.Range as Range
 import Data.Text(pack)
-import qualified Data.Text.Lazy.Encoding as Text
-import JappieLang.Run
-import Test.Tasty.Golden
+import Test.Golden
 
 main :: IO ()
-main = defaultMain unitTests
+main = do
+  golden <- goldenTests
+  defaultMain $ testGroup "all tests" [ unitTests,  golden]
 
 genName :: Hedgehog.Gen Name
 genName = MkName <$> Gen.text (Range.constant 1 20) Gen.alpha
@@ -37,7 +37,7 @@ generateCore' x = Gen.frequency [(1, Core.Var <$> genName),
                          ]
 
 unitTests :: TestTree
-unitTests = testGroup "tests" [
+unitTests = testGroup "unit tests" [
   testGroup "printer" [
       testProperty "roundTripParse " $ Hedgehog.property $ do
           xx <- Hedgehog.forAll generateCore
@@ -62,7 +62,6 @@ unitTests = testGroup "tests" [
   , testCase "lambda " $  eval (Core.Lam "x" (Core.var "x")) @?= Right (Core.Lam "x" (Core.var "x"))
   , testCase "var " $ eval (Core.var "x") @?= Right (Core.var "x")
   , testCase "apply name" $ eval (Core.App (Core.var "x") (Core.var "y")) @?= Left (ApplyingNameTo "x" (Core.var "y"))
-  , goldenRuns
   ]
 
 parserUnit :: TestTree
@@ -139,9 +138,4 @@ langFiles = testGroup "Language files"
         (Parsed.App (Parsed.App mempty (Parsed.Comment " identity"))
         (Parsed.Lam "x" (Parsed.var "x")))
   ]
-  ]
-
-goldenRuns :: TestTree
-goldenRuns = testGroup "Golden runs" [
-  goldenVsString "eval-identity" "test/golden/identity.expected" (Text.encodeUtf8 <$> runFilePrint "test/golden/identity.jappie")
   ]
