@@ -80,6 +80,7 @@ library
     , prettyprinter-ansi-terminal
     , prettyprinter
     , multiset
+    , containers
 
 
 test-suite unit
