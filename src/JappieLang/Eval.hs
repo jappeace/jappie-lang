@@ -27,7 +27,7 @@ evalStep :: CoreExpression -> Either EvalErrors CoreExpression
 evalStep = \case
   Var name -> Right (Var name)
   App expr1 expr2 -> apply expr1 expr2
-  Lam name expr -> Right (Lam name expr)
+  Lam name expr -> Lam name <$> (evalStep expr)
 
 apply :: CoreExpression -> CoreExpression -> Either EvalErrors CoreExpression
 apply appliedTo appliedWith = case appliedTo of
