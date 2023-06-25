@@ -10,8 +10,10 @@
 A basic language build around the lambda calcules.
 
 # TODO
-+ [ ] Make a golden test of output
-+ [ ] Get scoping right, currently names are just overwritten even if they're rebound
++ [x] Make a golden test of output
++ [x] Get scoping right, currently names are just overwritten even if they're rebound
++ [ ] Add code gen
++ [ ] Add simple type system
 + [ ] Add source mapping
 
 # What are newlines
