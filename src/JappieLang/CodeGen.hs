@@ -14,7 +14,7 @@ import Text.Trifecta.Delta
 import JappieLang.Print
 import JappieLang.SyntaxTree.Parsed
 import JappieLang.SyntaxTree.Core
-import JappieLang.SyntaxTree.Name
+import qualified JappieLang.SyntaxTree.Name as Jappie
 import Data.Text.Lazy
 import qualified Data.Text as SText
 import Prettyprinter
@@ -23,30 +23,17 @@ import Text.Trifecta.Result
 import JappieLang.Simplify
 import JappieLang.Eval
 import JappieLang.Rename
+import LLVM.IRBuilder.Module
 
--- https://hackage.haskell.org/package/x86-64bit-0.4.6.3/docs/CodeGen-X86-Asm.html#t:CodeLine
-tox86Asm :: CoreExpression -> [CodeLine]
-tox86Asm =  tox86AsmNames mempty
+toLlvmName :: Jappie.Name -> Name
+toLlvmName Jappie.MkName{..} =
+  Name (fromString $ (unpack humanName <> "_" <> (show shadowBust)))
 
-tox86AsmNames :: Set Name -> CoreExpression -> [CodeLine]
-tox86AsmNames namesSeen = \case
-  Var name -> [] -- TODO jmp to var?
-  App left right -> to86AsmApply left right
-  Lam name expr ->
-    let
-      label = Label (length namesSeen)
-      newSeen = Set.insert name namesSeen
-    in
-    if
-    Set.member name nameSeen
-    then error "dup name found" <> show name " in " <> show state
-    else
-      : [ ]
-
-to86AsmApply :: CoreExpression -> CoreExpression -> [CodeLine]
-to86AsmApply appliedTo appliedWith = case appliedTo of
-  Var name -> -- I guess this'd be afunction call to name? or in eval this is an error condition
-  App expr1 expr2 ->
-    -- in eval we first apply these two together,
-    -- then we use the result to apply further...
-  Lam name expr -> -- substitute all name in expr
+toLLVMModule :: CoreExpression -> ModuleBuilder ()
+toLLVMModule = \case
+  Var name -> do
+    strConstant <- globalStringPtr (humanName name) (toLlvmName name)
+    function "main" [] (IntegerType 32) $ \_x ->
+      call (LocalReference (IntegerType 32) "puts") [(LocalReference ""
+  App left right -> pure () -- TODO figure out application
+  Lam name expr -> pure ()
