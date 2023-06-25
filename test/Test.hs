@@ -19,15 +19,13 @@ import qualified Hedgehog.Range as Range
 import Data.Text(pack)
 import Test.Golden
 
-
-
 main :: IO ()
 main = do
   golden <- goldenTests
   defaultMain $ testGroup "all tests" [ unitTests,  golden]
 
 genName :: Hedgehog.Gen Name
-genName = MkName <$> Gen.text (Range.constant 1 20) Gen.alpha
+genName = mkName <$> Gen.text (Range.constant 1 20) Gen.alpha
 
 generateCore :: Hedgehog.Gen CoreExpression
 generateCore = generateCore' 0

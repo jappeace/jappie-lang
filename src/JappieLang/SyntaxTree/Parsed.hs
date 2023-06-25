@@ -18,7 +18,7 @@ data ParsedExpression
           deriving (Eq, Show)
 
 var :: Text -> ParsedExpression
-var = Var . MkName
+var = Var . mkName
 
 instance Semigroup ParsedExpression where
   (<>) a b = App a b

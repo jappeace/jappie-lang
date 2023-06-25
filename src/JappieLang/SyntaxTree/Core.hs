@@ -16,4 +16,4 @@ data CoreExpression = Var Name
           deriving (Eq, Show)
 
 var :: Text -> CoreExpression
-var = Var . MkName
+var = Var . mkName

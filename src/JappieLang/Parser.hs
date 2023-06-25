@@ -64,7 +64,7 @@ parseVar :: Parser ParsedExpression
 parseVar = Var <$> parseIdent
 
 parseIdent :: Parser Name
-parseIdent = MkName <$> ident idStyle
+parseIdent = mkName <$> ident idStyle
 
 -- https://hackage.haskell.org/package/parsers-0.12.10/docs/Text-Parser-Combinators.html#v:endBy
 comment :: Parser ParsedExpression

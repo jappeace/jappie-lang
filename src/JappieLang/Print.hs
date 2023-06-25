@@ -16,9 +16,6 @@ printCoreExpression = renderLazy . layoutSmart defaultLayoutOptions . coreToDoc
 
 coreToDoc :: CoreExpression -> Doc AnsiStyle
 coreToDoc = \case
-  Var name -> nameToBuilder name
+  Var name -> prettyName name
   App expr1 expr2 -> parens $ coreToDoc expr1 <> space <> coreToDoc expr2
-  Lam name body -> parens $ (brackets (nameToBuilder name)) <+> coreToDoc body
-
-nameToBuilder :: Name -> Doc AnsiStyle
-nameToBuilder (MkName name) = pretty name
+  Lam name body -> parens $ (brackets (prettyName name)) <+> coreToDoc body
