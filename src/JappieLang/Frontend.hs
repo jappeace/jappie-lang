@@ -21,7 +21,6 @@ import Prettyprinter.Render.Terminal
 import Text.Trifecta.Result
 import JappieLang.Simplify
 import JappieLang.Rename
-import JappieLang.Print
 
 parseErrorDoc :: ErrInfo -> Doc AnsiStyle
 parseErrorDoc ErrInfo{..} =
