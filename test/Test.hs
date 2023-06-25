@@ -33,7 +33,7 @@ generateCore = generateCore' 0
 generateCore' :: Int -> Hedgehog.Gen CoreExpression
 generateCore' x = Gen.frequency [(1, Core.Var <$> genName),
                           (max 0 (4 - x), Core.App <$> generateCore' (x + 1) <*> generateCore' (x + 1)),
-                          (max 0 (3 - x), Core.Lam <$> genName <*> generateCore' (x + 1))
+                          (max 0 (5 - x), Core.Lam <$> genName <*> generateCore' (x + 1))
                          ]
 
 unitTests :: TestTree
