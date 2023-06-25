@@ -1,18 +1,18 @@
 
-module Test.LLvm(goldenTests) where
+module Test.Llvm(llvmTests) where
 
 import Test.Tasty
 import TestOrphans()
-import qualified Data.Text.Lazy.Encoding as Text
 import Test.Tasty.Golden
+import JappieLang.CodeGen
+import qualified Data.ByteString.Lazy as LBS
 
-
-goldenTests :: IO TestTree
-goldenTests = do
+llvmTests :: IO TestTree
+llvmTests = do
   filePaths <- fmap (fmap $ (takeWhile (/= '.'))) $ findByExtension [".expected"] "test/golden-llvm-asm"
   print filePaths
   pure $ testGroup "Golden runs" (goldenRun <$> filePaths)
 
 goldenRun :: FilePath -> TestTree
 goldenRun path =
-  goldenVsString path (path <> ".expected") (Text.encodeUtf8 <$> runFilePrint (path <>".jappie"))
+  goldenVsString path (path <> ".expected") (LBS.fromStrict <$> genLLVMAssembly (path <>".jappie"))

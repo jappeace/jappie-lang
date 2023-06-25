@@ -26,8 +26,7 @@ data RunErrors = FrontendError FrontendErrors
                | EvalError EvalErrors
 
 printErrors :: RunErrors -> Text
-printErrors =
-  renderLazy . layoutSmart defaultLayoutOptions . runErrorsDoc
+printErrors = printDoc . runErrorsDoc
 
 
 evalErrorsDoc :: EvalErrors -> Doc AnsiStyle

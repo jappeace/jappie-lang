@@ -18,11 +18,13 @@ import JappieLang.SyntaxTree.Name
 import qualified Hedgehog.Range as Range
 import Data.Text(pack)
 import Test.Golden
+import Test.Llvm
 
 main :: IO ()
 main = do
   golden <- goldenTests
-  defaultMain $ testGroup "all tests" [ unitTests,  golden]
+  llvm <- llvmTests
+  defaultMain $ testGroup "all tests" [ unitTests,  golden, llvm]
 
 genName :: Hedgehog.Gen Name
 genName = mkName <$> Gen.text (Range.constant 1 20) Gen.alpha

@@ -2,44 +2,52 @@
 -- | Takes an AST, make an LLVM asm out of it
 module JappieLang.CodeGen
   ( toLLVMModule
+  , genLLVMAssembly
   )
 where
 
-import Data.Bifunctor
-import JappieLang.Parser
-import Text.Trifecta.Delta
+import qualified Control.Monad as M
+import Data.String
 import JappieLang.Print
-import JappieLang.SyntaxTree.Parsed
 import JappieLang.SyntaxTree.Core
 import qualified JappieLang.SyntaxTree.Name as Jappie
 import Data.Text.Lazy
 import qualified Data.Text as SText
-import Prettyprinter
-import Prettyprinter.Render.Terminal
-import Text.Trifecta.Result
-import JappieLang.Simplify
-import JappieLang.Eval
-import JappieLang.Rename
 import LLVM.IRBuilder.Module
+import LLVM.AST.Type
+import LLVM.AST.Operand
+import LLVM.IRBuilder.Instruction
 import qualified LLVM.Module as FFI
+import Data.ByteString(ByteString)
+import LLVM.AST.Name
+import LLVM.Context
+import JappieLang.Frontend
+
+genLLVMAssembly :: FilePath -> IO ByteString
+genLLVMAssembly path = do
+  result' <- fileToCoreExpression path
+  case result' of
+    Left err -> error (unpack (printDoc $ frontendErrorsDoc err))
+    Right core -> toLLVMAssembly core
 
 toLLVMAssembly :: CoreExpression -> IO ByteString
 toLLVMAssembly expression =
-    FFI.withModuleFromAST emptyContext moduleAst FFI.moduleLLVMAssembly
-    let
+    withContext $ \emptyContext ->
+      FFI.withModuleFromAST emptyContext moduleAst FFI.moduleLLVMAssembly
+    where
       moduleAst = buildModule "Main" $ toLLVMModule expression
 
 toLlvmName :: Jappie.Name -> Name
-toLlvmName Jappie.MkName{..} =
-  Name (fromString $ (unpack humanName <> "_" <> (show shadowBust)))
+toLlvmName name' =
+  Name (fromString $ (SText.unpack (Jappie.humanName name') <> "_" <> (show (Jappie.shadowBust name'))))
 
 
 toLLVMModule :: CoreExpression -> ModuleBuilder ()
 toLLVMModule = \case
   Var name -> do
-    strConstant <- globalStringPtr (humanName name) (toLlvmName name)
     -- extern puts?
-    function "main" [] (IntegerType 32) $ \_x ->
-      call (LocalReference (IntegerType 32) "puts") [(ConstantOperand strConstant, [])]
-  App left right -> pure () -- TODO figure out application
-  Lam name expr -> pure ()
+    M.void $ function "main" [] (IntegerType 32) $ \_x -> do
+      strConstant <- globalStringPtr (SText.unpack $ Jappie.humanName name) (toLlvmName name)
+      (M.void $ call (LocalReference (IntegerType 32) "puts") [(ConstantOperand strConstant, [])])
+  App _left _right -> pure () -- TODO figure out application
+  Lam _name _expr -> pure ()
