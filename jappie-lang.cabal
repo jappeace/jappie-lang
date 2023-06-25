@@ -65,6 +65,8 @@ library
       JappieLang.SyntaxTree.Name
       JappieLang.SyntaxTree.Core
       JappieLang.Parser
+      JappieLang.Simplify
+      JappieLang.Rename
   other-modules:
       Paths_jappie_lang
   hs-source-dirs:
