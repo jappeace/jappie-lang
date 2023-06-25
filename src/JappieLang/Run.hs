@@ -25,6 +25,7 @@ import Prettyprinter.Render.Terminal
 import Text.Trifecta.Result
 import JappieLang.Simplify
 import JappieLang.Eval
+import JappieLang.Rename
 
 data RunErrors = ParseError ErrInfo
                | SimplifyErrors SimplifyIsseus
@@ -71,4 +72,4 @@ runResultExpression :: (Result ParsedExpression) -> Either RunErrors CoreExpress
 runResultExpression result = do
   parsedExpr <- foldResult (Left . ParseError) Right result
   coreExpr   <- first SimplifyErrors $ simplify parsedExpr
-  first EvalError $ eval coreExpr
+  first EvalError $ evalFix $ rename coreExpr

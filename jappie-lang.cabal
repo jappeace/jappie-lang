@@ -79,6 +79,7 @@ library
     , trifecta
     , prettyprinter-ansi-terminal
     , prettyprinter
+    , multiset
 
 
 test-suite unit

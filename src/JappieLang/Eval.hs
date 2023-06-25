@@ -1,5 +1,6 @@
 module JappieLang.Eval
-  (eval
+  (evalStep
+  , evalFix
   , EvalErrors(..)
   )
 where
@@ -10,9 +11,20 @@ import JappieLang.SyntaxTree.Name
 data EvalErrors = ApplyingNameTo Name CoreExpression
   deriving (Eq, Show)
 
+-- | keeps on performing evaluation steps untill the expression
+--   is the same in 2 consequative steps
+evalFix :: CoreExpression -> Either EvalErrors CoreExpression
+evalFix expr =
+  let
+    once = evalStep expr
+    twice = evalStep expr >>= evalStep
+  in
+    if once == twice then once else once >>= evalFix
 
-eval :: CoreExpression -> Either EvalErrors CoreExpression
-eval = \case
+
+-- | performs a single evaluation step
+evalStep :: CoreExpression -> Either EvalErrors CoreExpression
+evalStep = \case
   Var name -> Right (Var name)
   App expr1 expr2 -> apply expr1 expr2
   Lam name expr -> Right (Lam name expr)

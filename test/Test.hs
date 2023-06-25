@@ -57,11 +57,11 @@ unitTests = testGroup "unit tests" [
   ],
   testGroup "eval"
   [testCase "App free variable y to x" $
-    eval (Core.App (Core.Lam "x" (Core.var "x")) (Core.Lam "y" (Core.var "y"))) @?= Right (Core.Lam "y" (Core.var "y"))
+    evalStep (Core.App (Core.Lam "x" (Core.var "x")) (Core.Lam "y" (Core.var "y"))) @?= Right (Core.Lam "y" (Core.var "y"))
   ]
-  , testCase "lambda " $  eval (Core.Lam "x" (Core.var "x")) @?= Right (Core.Lam "x" (Core.var "x"))
-  , testCase "var " $ eval (Core.var "x") @?= Right (Core.var "x")
-  , testCase "apply name" $ eval (Core.App (Core.var "x") (Core.var "y")) @?= Left (ApplyingNameTo "x" (Core.var "y"))
+  , testCase "lambda " $  evalStep (Core.Lam "x" (Core.var "x")) @?= Right (Core.Lam "x" (Core.var "x"))
+  , testCase "var " $ evalStep (Core.var "x") @?= Right (Core.var "x")
+  , testCase "apply name" $ evalStep (Core.App (Core.var "x") (Core.var "y")) @?= Left (ApplyingNameTo "x" (Core.var "y"))
   ]
 
 parserUnit :: TestTree
