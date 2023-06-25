@@ -11,6 +11,7 @@ import TestOrphans()
 import qualified Hedgehog
 import qualified Hedgehog.Gen as Gen
 import JappieLang.Simplify
+import JappieLang.Print
 import Data.Text.Lazy(toStrict)
 import Test.Tasty.Hedgehog
 import JappieLang.SyntaxTree.Name
