@@ -83,8 +83,7 @@ library
     , prettyprinter
     , multiset
     , containers
-    , llvm-hs
-    , llvm-hs-pure
+    , llvm-party
 
 
 test-suite unit
