@@ -58,8 +58,7 @@ common common-options
 library
   import: common-options
   exposed-modules:
-      JappieLang.Eval
-      JappieLang.Run
+      JappieLang.RunEval
       JappieLang.Print
       JappieLang.SyntaxTree.Parsed 
       JappieLang.SyntaxTree.Name
@@ -67,6 +66,10 @@ library
       JappieLang.Parser
       JappieLang.Simplify
       JappieLang.Rename
+      JappieLang.Eval
+      JappieLang.Frontend
+      JappieLang.CodeGen
+
   other-modules:
       Paths_jappie_lang
   hs-source-dirs:
@@ -77,6 +80,7 @@ library
   build-depends:
       base >=4.7 && <5
     , parsers
+    , bytestring
     , text
     , trifecta
     , prettyprinter-ansi-terminal
@@ -93,6 +97,10 @@ test-suite unit
   ghc-options: -Wno-unused-packages
   other-modules:
       Paths_jappie_lang
+      Test.Golden
+      Test.Llvm
+      TestOrphans
+
   hs-source-dirs:
       test
   ghc-options: -Wno-unused-packages
@@ -110,3 +118,4 @@ test-suite unit
     , tasty-golden
     , prettyprinter-ansi-terminal
     , prettyprinter
+    , bytestring
