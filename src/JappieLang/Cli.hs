@@ -3,6 +3,8 @@
 -- | Command line interface
 module JappieLang.Cli
   ( entryPoint
+  , compile
+  , CompileOptions(..)
   )
 where
 

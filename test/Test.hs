@@ -18,7 +18,7 @@ import JappieLang.SyntaxTree.Name
 import qualified Hedgehog.Range as Range
 import Data.Text(pack)
 import Test.Golden
-import Test.Llvm
+import Test.Compile
 
 main :: IO ()
 main = do

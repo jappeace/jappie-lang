@@ -101,7 +101,7 @@ test-suite unit
   other-modules:
       Paths_jappie_lang
       Test.Golden
-      Test.Llvm
+      Test.Compile
       TestOrphans
 
   hs-source-dirs:
@@ -113,6 +113,7 @@ test-suite unit
     , jappie-lang
     , parsers
     , tasty
+    , typed-process
     , tasty-hunit
     , text
     , trifecta
