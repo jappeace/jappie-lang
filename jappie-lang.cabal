@@ -90,6 +90,7 @@ library
     , containers
     , llvm-party
     , optparse-applicative
+    , typed-process
 
 
 test-suite unit

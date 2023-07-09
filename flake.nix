@@ -37,7 +37,7 @@
           pkgs.ghcid
           pkgs.haskellPackages.hasktags
           pkgs.cabal-install
-          pkgs.nasm
+          pkgs.binutils # to get gnu assembler which llvm seems to target
         ];
       };
     };

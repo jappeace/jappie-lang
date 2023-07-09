@@ -6,6 +6,8 @@ module JappieLang.Cli
   )
 where
 
+import System.Process.Typed
+import Data.String
 import           Options.Applicative
 import Data.Foldable
 import qualified JappieLang.CodeGen as CodeGen
@@ -19,9 +21,19 @@ newtype LLVMOpts = MkLLVOpts {llvmInput :: FilePath }
 data CliOptions = Compile CompileOptions
                 | LLVM LLVMOpts
 
+
 compile :: CompileOptions -> IO ()
 compile MkCompileOptions {..} = do
-      CodeGen.writeTargetAssembly inputFile (outputFile <> "." <> "asm")
+      -- 0. generate as code (assemble code)
+      CodeGen.writeTargetAssembly inputFile "target.asm"
+      -- 1. assemble
+      runProcess_ $ "as -o target.o target.asm"
+
+      -- 2. link
+      -- ld doesn't work cuz we need stdlib for now
+      -- TODO write a better stdlib in jappie-lang
+      runProcess_ $ fromString $ "gcc target.o -o " <> outputFile
+
 
 llvm :: LLVMOpts -> IO ()
 llvm (MkLLVOpts input) = do
