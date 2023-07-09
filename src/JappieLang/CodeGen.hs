@@ -8,6 +8,7 @@ module JappieLang.CodeGen
 where
 
 import qualified Control.Monad as M
+import qualified LLVM.AST.Constant as Constant
 import Data.String
 import JappieLang.Print
 import JappieLang.SyntaxTree.Core
@@ -65,9 +66,11 @@ toLLVMModule = \case
     -- extern puts?
 
     putsF <- extern "puts" [ArrayType (fromIntegral $ SText.length nameStr) (IntegerType 8) ] VoidType
+    exitF <- extern "exit" [IntegerType 8] VoidType
     M.void $ function "main" [] (IntegerType 32) $ \_x -> do
       strConstant <- globalStringPtr (SText.unpack nameStr) (toLlvmName name)
       (M.void $ call putsF [(ConstantOperand strConstant, [])])
+      (M.void $ call exitF [(ConstantOperand (Constant.Int 8 0), [])])
   App left right -> do
     toLLVMModule left
     toLLVMModule right
