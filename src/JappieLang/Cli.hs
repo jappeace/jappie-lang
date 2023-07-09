@@ -1,0 +1,65 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ApplicativeDo #-}
+-- | Command line interface
+module JappieLang.Cli
+  ( entryPoint
+  )
+where
+
+import           Options.Applicative
+import Data.Foldable
+import qualified JappieLang.CodeGen as CodeGen
+import qualified Data.Text.Encoding as Text
+import qualified Data.Text.IO as Text
+
+data CompileOptions = MkCompileOptions { inputFile :: FilePath, outputFile :: FilePath }
+
+newtype LLVMOpts = MkLLVOpts {llvmInput :: FilePath }
+
+data CliOptions = Compile CompileOptions
+                | LLVM LLVMOpts
+
+compile :: CompileOptions -> IO ()
+compile MkCompileOptions {..} = do
+      CodeGen.writeTargetAssembly inputFile (outputFile <> "." <> "asm")
+
+llvm :: LLVMOpts -> IO ()
+llvm (MkLLVOpts input) = do
+  xx <- CodeGen.genLLVMAssembly input
+  Text.putStr $ Text.decodeUtf8 xx
+
+entryPoint :: IO ()
+entryPoint = do
+  option <- readCliOptions
+  case option of
+    Compile compileOpts -> compile compileOpts
+    LLVM input -> llvm input
+
+jappieLangInputFile :: Parser FilePath
+jappieLangInputFile = strOption $ long "file-in" <> metavar "FILE" <> help "input file in jappie lang"
+
+parseCompileOptions :: Parser CompileOptions
+parseCompileOptions = do
+  inputFile <- jappieLangInputFile
+  outputFile <- strOption $ long "file-out" <> metavar "FILE" <> help "output file, the executable" <> value "a.out"
+  pure $ MkCompileOptions {..}
+
+parseOptions :: Parser CliOptions
+parseOptions = hsubparser $
+  fold [
+  command "llvm"
+    (info (LLVM . MkLLVOpts  <$> jappieLangInputFile)
+      (progDesc "emit a jappie-lang program as llvm IR"))
+  ,
+  command "compile"
+    (info (Compile <$> parseCompileOptions)
+      (progDesc "compile a jappie-lang program"))
+  ]
+
+readCliOptions :: IO CliOptions
+readCliOptions = do
+  customExecParser (prefs showHelpOnError) $ info
+    (helper <*> parseOptions)
+    (fullDesc <> Options.Applicative.header "Jappie Lang" <> progDesc
+      "Cli options for the jappie language"
+    )

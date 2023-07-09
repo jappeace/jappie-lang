@@ -3,6 +3,7 @@
 module JappieLang.CodeGen
   ( toLLVMModule
   , genLLVMAssembly
+  , writeTargetAssembly
   )
 where
 
@@ -23,18 +24,32 @@ import LLVM.AST.Name
 import LLVM.Context
 import JappieLang.Frontend
 import GHC.Stack
+import qualified LLVM.Target as Target
+
+-- | in goes the language, out comse machine specific assembly
+writeTargetAssembly :: FilePath -> FilePath -> IO ()
+writeTargetAssembly language output =
+  Target.withHostTargetMachineDefault $ \target -> do
+    coreExpr <- handleFrontentErrors =<< fileToCoreExpression language
+    asLLVMModule coreExpr $
+      FFI.writeTargetAssemblyToFile target (FFI.File output)
+
+handleFrontentErrors :: Either FrontendErrors CoreExpression -> IO CoreExpression
+handleFrontentErrors = \case
+    Left err -> error (unpack (printDoc $ frontendErrorsDoc err))
+    Right core -> pure core
 
 genLLVMAssembly :: HasCallStack =>FilePath -> IO ByteString
-genLLVMAssembly path = do
-  result' <- fileToCoreExpression path
-  case result' of
-    Left err -> error (unpack (printDoc $ frontendErrorsDoc err))
-    Right core -> toLLVMAssembly core
+genLLVMAssembly path =
+  toLLVMAssembly =<< handleFrontentErrors =<< fileToCoreExpression path
 
 toLLVMAssembly :: HasCallStack =>CoreExpression -> IO ByteString
-toLLVMAssembly expression =
+toLLVMAssembly expression = asLLVMModule expression FFI.moduleLLVMAssembly
+
+asLLVMModule :: HasCallStack =>CoreExpression -> (FFI.Module -> IO a) -> IO a
+asLLVMModule expression moduleConsumer =
     withContext $ \emptyContext ->
-      FFI.withModuleFromAST emptyContext moduleAst FFI.moduleLLVMAssembly
+      FFI.withModuleFromAST emptyContext moduleAst moduleConsumer
     where
       moduleAst = buildModule "Main" $ toLLVMModule expression
 

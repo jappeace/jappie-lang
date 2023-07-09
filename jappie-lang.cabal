@@ -69,6 +69,7 @@ library
       JappieLang.Eval
       JappieLang.Frontend
       JappieLang.CodeGen
+      JappieLang.Cli
 
   other-modules:
       Paths_jappie_lang
@@ -88,6 +89,7 @@ library
     , multiset
     , containers
     , llvm-party
+    , optparse-applicative
 
 
 test-suite unit
@@ -119,3 +121,13 @@ test-suite unit
     , prettyprinter-ansi-terminal
     , prettyprinter
     , bytestring
+
+executable jappie
+  import: common-options
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  build-depends:
+      jappie-lang
+      , base
+  ghc-options: -Wno-unused-packages
