@@ -7,6 +7,7 @@ module JappieLang.CodeGen
   )
 where
 
+import LLVM.IRBuilder.Monad
 import qualified Control.Monad as M
 import qualified LLVM.AST.Constant as Constant
 import Data.String
@@ -60,19 +61,35 @@ toLlvmName name' =
 
 
 toLLVMModule :: HasCallStack => CoreExpression -> ModuleBuilder ()
-toLLVMModule = \case
+toLLVMModule core = do
+  exitF <- extern "exit" [IntegerType 8] VoidType
+  thunk <- buildSubExpresion MkRuntime core
+  M.void $ function "main" [] (IntegerType 32) $ \_x -> do
+    thunk
+    (M.void $ call exitF [(ConstantOperand (Constant.Int 8 0), [])])
+
+
+buildSubExpresion ::  MonadModuleBuilder m => Runtime -> CoreExpression -> ModuleBuilder (IRBuilderT m ())
+buildSubExpresion runtime = \case
   Var name -> do
     let nameStr = Jappie.humanName name
-    -- extern puts?
+    callPuts nameStr $ \putsF -> do
+      pure $ do
+        strConstant <- globalStringPtr (SText.unpack nameStr) (toLlvmName name)
+        (M.void $ call putsF [(ConstantOperand strConstant, [])])
 
-    putsF <- extern "puts" [ArrayType (fromIntegral $ SText.length nameStr) (IntegerType 8) ] VoidType
-    exitF <- extern "exit" [IntegerType 8] VoidType
-    M.void $ function "main" [] (IntegerType 32) $ \_x -> do
-      strConstant <- globalStringPtr (SText.unpack nameStr) (toLlvmName name)
-      (M.void $ call putsF [(ConstantOperand strConstant, [])])
-      (M.void $ call exitF [(ConstantOperand (Constant.Int 8 0), [])])
   App left right -> do
-    toLLVMModule left
-    toLLVMModule right
-    pure () -- TODO figure out application
-  Lam _name expr -> toLLVMModule expr
+    one <- buildSubExpresion runtime left
+    two <- buildSubExpresion runtime right
+    pure $ do
+      one
+      two
+  Lam _name expr -> buildSubExpresion runtime expr
+
+data Runtime = MkRuntime -- TODO delete?
+
+-- | declares a puts of the right size
+callPuts :: SText.Text -> (Operand -> ModuleBuilder a) -> ModuleBuilder a
+callPuts txt fun = do
+  putsF <- extern "puts" [ArrayType (fromIntegral $ SText.length txt) (IntegerType 8) ] VoidType
+  fun putsF
