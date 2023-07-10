@@ -123,6 +123,9 @@ test-suite unit
     , prettyprinter-ansi-terminal
     , prettyprinter
     , bytestring
+    , directory
+    , filepath
+    , temporary
 
 executable jappie
   import: common-options
