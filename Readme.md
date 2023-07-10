@@ -9,6 +9,16 @@
 
 A basic language build around the lambda calcules.
 
+# Running
+
+running jappie code:
+
+```
+nix develop
+cabal run jappie -- compile --in-file ./jappie.jappie --out-file a.out
+./a.out
+```
+
 # TODO
 + [x] Make a golden test of output
 + [x] Get scoping right, currently names are just overwritten even if they're rebound
