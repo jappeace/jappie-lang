@@ -15,21 +15,41 @@ import Data.Foldable
 import qualified JappieLang.CodeGen as CodeGen
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.IO as Text
+import qualified Data.Text as Text
+import qualified Data.ByteString as BS
+import System.Directory(createDirectoryIfMissing)
+import System.FilePath
 
-data CompileOptions = MkCompileOptions { inputFile :: FilePath, outputFile :: FilePath }
+data CompileOptions = MkCompileOptions
+  { inputFile :: FilePath
+  , outputFile :: FilePath
+  , workDir :: FilePath
+  }
+
+defaultCompileOptions :: CompileOptions
+defaultCompileOptions = MkCompileOptions
+  { inputFile = "in.jappie"
+  , outputFile = "a.out"
+  , workDir = "build"
+  }
+
 
 newtype LLVMOpts = MkLLVOpts {llvmInput :: FilePath }
 
 data CliOptions = Compile CompileOptions
                 | LLVM LLVMOpts
 
-
 compile :: CompileOptions -> IO ()
 compile MkCompileOptions {..} = do
       -- 0. generate as code (assemble code)
-      CodeGen.writeTargetAssembly inputFile "target.asm"
+      assamblyBs <- CodeGen.writeTargetAssembly inputFile
+
+      let asText = Text.decodeUtf8 assamblyBs
+      createDirectoryIfMissing True workDir
+      let target = workDir </> "target.asm"
+      BS.writeFile target assamblyBs
       -- 1. assemble
-      runProcess_ $ "as -o target.o target.asm"
+      runProcess_ $ fromString $ "as -o target.o " <> target
 
       -- 2. link
       -- ld doesn't work cuz we need stdlib for now
@@ -55,7 +75,8 @@ jappieLangInputFile = strOption $ long "file-in" <> metavar "FILE" <> help "inpu
 parseCompileOptions :: Parser CompileOptions
 parseCompileOptions = do
   inputFile <- jappieLangInputFile
-  outputFile <- strOption $ long "file-out" <> metavar "FILE" <> help "output file, the executable" <> value "a.out"
+  outputFile <- strOption $ long "file-out" <> metavar "FILE" <> help "output file, the executable" <> value (outputFile defaultCompileOptions)
+  workDir <- strOption $ long "work-dir" <> metavar "PATH" <> help "work dir for intermediate files" <> value (workDir defaultCompileOptions)
   pure $ MkCompileOptions {..}
 
 parseOptions :: Parser CliOptions

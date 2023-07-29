@@ -2,6 +2,7 @@
 module Test.Compile(llvmTests) where
 
 import System.IO.Temp
+import UnliftIO.Exception
 import System.Directory
 import System.Process.Typed
 import Test.Tasty
@@ -24,7 +25,13 @@ goldenRun path =
   goldenVsString path (path <> ".expected") $ do
     withSystemTempDirectory "golden-run-compile" $ \dir -> do
       compile $ MkCompileOptions {
-        inputFile = (path <>".jappie")
+          inputFile = (path <>".jappie")
         , outputFile = dir </> "a.out"
+        , workDir = dir
         }
-      readProcessStdout_ $ fromString $ dir </> "./a.out"
+      onException (readProcessStdout_ $ fromString $ dir </> "./a.out") $ do
+        xx <- readFile $ dir </> "target.asm"
+        putStrLn $ "failing assembly " <> dir </> "target.asm"
+        putStrLn ""
+        putStrLn ""
+        putStrLn xx

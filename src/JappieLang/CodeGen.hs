@@ -29,12 +29,12 @@ import GHC.Stack
 import qualified LLVM.Target as Target
 
 -- | in goes the language, out comse machine specific assembly
-writeTargetAssembly :: FilePath -> FilePath -> IO ()
-writeTargetAssembly language output =
+writeTargetAssembly :: FilePath -> IO ByteString
+writeTargetAssembly language =
   Target.withHostTargetMachineDefault $ \target -> do
     coreExpr <- handleFrontentErrors =<< fileToCoreExpression language
     asLLVMModule coreExpr $
-      FFI.writeTargetAssemblyToFile target (FFI.File output)
+      FFI.moduleTargetAssembly target
 
 handleFrontentErrors :: Either FrontendErrors CoreExpression -> IO CoreExpression
 handleFrontentErrors = \case

@@ -91,6 +91,8 @@ library
     , llvm-party
     , optparse-applicative
     , typed-process
+    , directory
+    , filepath
 
 
 test-suite unit
@@ -126,6 +128,7 @@ test-suite unit
     , directory
     , filepath
     , temporary
+    , unliftio
 
 executable jappie
   import: common-options
