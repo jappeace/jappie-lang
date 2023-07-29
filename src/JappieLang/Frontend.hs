@@ -16,11 +16,13 @@ import JappieLang.SyntaxTree.Parsed
 import JappieLang.SyntaxTree.Core
 import Data.Text.Lazy
 import qualified Data.Text as SText
+import qualified JappieLang.SyntaxTree.Parsed as Parsed
 import Prettyprinter
 import Prettyprinter.Render.Terminal
 import Text.Trifecta.Result
 import JappieLang.Simplify
 import JappieLang.Rename
+import JappieLang.SyntaxTree.Name
 
 parseErrorDoc :: ErrInfo -> Doc AnsiStyle
 parseErrorDoc ErrInfo{..} =
@@ -33,10 +35,17 @@ parseErrorDoc ErrInfo{..} =
 frontendErrorsDoc :: FrontendErrors -> Doc AnsiStyle
 frontendErrorsDoc = \case
   ParseError parseError -> parseErrorDoc parseError
-  SimplifyErrors simplify' -> simplifyDoc simplify'
+  SimplifyErrors parsed simplify' -> vsep [simplifyDoc simplify', pretty @Text "with this parsed expression: ",  parsedToDoc parsed]
+
+parsedToDoc :: ParsedExpression -> Doc AnsiStyle
+parsedToDoc = \case
+  Parsed.Var name -> prettyName name
+  Parsed.Comment text -> vsep [pretty ';' <> space  <> pretty text]
+  Parsed.App expr1 expr2 -> parens $ parsedToDoc expr1 <> space <> parsedToDoc expr2
+  Parsed.Lam name body -> parens $ (brackets (prettyName name)) <+> parsedToDoc body
 
 data FrontendErrors = ParseError ErrInfo
-                | SimplifyErrors SimplifyIsseus
+                    | SimplifyErrors ParsedExpression SimplifyIsseus
 
 fileToCoreExpression :: FilePath -> IO (Either FrontendErrors CoreExpression)
 fileToCoreExpression path =
@@ -48,5 +57,5 @@ textToCoreExpression x = resultToCoreExpression $ parseText x
 resultToCoreExpression :: (Result ParsedExpression) -> Either FrontendErrors CoreExpression
 resultToCoreExpression result = do
   parsedExpr <- foldResult (Left . ParseError) Right result
-  coreExpr   <- first SimplifyErrors $ simplify parsedExpr
+  coreExpr   <- first (SimplifyErrors parsedExpr) $ simplify parsedExpr
   pure $ rename coreExpr

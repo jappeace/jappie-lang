@@ -17,7 +17,7 @@ import Prettyprinter.Render.Terminal
 
 -- TODO keep track of where these occured
 simplifyDoc :: SimplifyIsseus -> Doc AnsiStyle
-simplifyDoc = \case
+simplifyDoc = (pretty @Text "simplify issue - " <+> ) . \case
     IsComment comment -> pretty @Text "is comment: " <+> dquotes (pretty comment)
     EmptyLambda name text -> pretty @Text "empty lambda: " <+> prettyName name <+> "filled with " <+> dquotes (pretty text)
 
