@@ -1,0 +1,15 @@
+; we need the indirection because right now 
+; there is no way to do recursive calls,
+; so you need to open up a scope `f` to define
+; it for fix (and pass itself :p)
+
+; eg reduction 1: ([f] (f (([x] f (x x)) ([x] f (x x)))) )
+; eg reduction 2: ([f] (f (f (([x] f (x x)) ([x] f (x x)))) )) 
+
+; `x` is there for a hidden from the user part of internal machinere
+; the user get's to deicde what to do with the argument past to f to
+; repeat or not
+([f] ([x] f (x x)) ([x] f (x x)))
+
+; therefore this will loop forever
+([x] x)
