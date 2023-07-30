@@ -1,0 +1,4 @@
+; here I run into the issue that I can' re-use true (or make a derived fale)
+; so I need support for toplevel bindings/ a module system first
+([true not isZero]
+) ([a b] a) ([p a b] p (b a)) ([n] n ([x] false) true)
