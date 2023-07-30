@@ -14,11 +14,12 @@ import           Options.Applicative
 import Data.Foldable
 import qualified JappieLang.CodeGen as CodeGen
 import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Lazy as LText
 import qualified Data.Text.IO as Text
-import qualified Data.Text as Text
 import qualified Data.ByteString as BS
 import System.Directory(createDirectoryIfMissing)
 import System.FilePath
+import JappieLang.RunEval(runFilePrint)
 
 data CompileOptions = MkCompileOptions
   { inputFile :: FilePath
@@ -26,6 +27,9 @@ data CompileOptions = MkCompileOptions
   , workDir :: FilePath
   }
 
+data EvalOptions = MkEvalOptions
+  { _evalInputFile :: FilePath
+  }
 defaultCompileOptions :: CompileOptions
 defaultCompileOptions = MkCompileOptions
   { inputFile = "in.jappie"
@@ -34,17 +38,17 @@ defaultCompileOptions = MkCompileOptions
   }
 
 
-newtype LLVMOpts = MkLLVOpts {llvmInput :: FilePath }
+newtype LLVMOptions = MkLLVMOptions {_llvmInput :: FilePath }
 
 data CliOptions = Compile CompileOptions
-                | LLVM LLVMOpts
+                | LLVM LLVMOptions
+                | Eval EvalOptions
 
 compile :: CompileOptions -> IO ()
 compile MkCompileOptions {..} = do
       -- 0. generate as code (assemble code)
       assamblyBs <- CodeGen.writeTargetAssembly inputFile
 
-      let asText = Text.decodeUtf8 assamblyBs
       createDirectoryIfMissing True workDir
       let target = workDir </> "target.asm"
       BS.writeFile target assamblyBs
@@ -57,17 +61,23 @@ compile MkCompileOptions {..} = do
       runProcess_ $ fromString $ "gcc target.o -o " <> outputFile
 
 
-llvm :: LLVMOpts -> IO ()
-llvm (MkLLVOpts input) = do
+llvm :: LLVMOptions -> IO ()
+llvm (MkLLVMOptions input) = do
   xx <- CodeGen.genLLVMAssembly input
   Text.putStr $ Text.decodeUtf8 xx
 
+eval :: EvalOptions -> IO ()
+eval (MkEvalOptions input) = do
+  txt <- runFilePrint input
+  Text.putStr $ LText.toStrict txt
+
 entryPoint :: IO ()
 entryPoint = do
-  option <- readCliOptions
-  case option of
+  option' <- readCliOptions
+  case option' of
     Compile compileOpts -> compile compileOpts
     LLVM input -> llvm input
+    Eval input -> eval input
 
 jappieLangInputFile :: Parser FilePath
 jappieLangInputFile = strOption $ long "file-in" <> metavar "FILE" <> help "input file in jappie lang"
@@ -82,8 +92,12 @@ parseCompileOptions = do
 parseOptions :: Parser CliOptions
 parseOptions = hsubparser $
   fold [
+  command "eval"
+    (info (Eval . MkEvalOptions <$> jappieLangInputFile)
+      (progDesc "evaluate a program"))
+  ,
   command "llvm"
-    (info (LLVM . MkLLVOpts  <$> jappieLangInputFile)
+    (info (LLVM . MkLLVMOptions <$> jappieLangInputFile)
       (progDesc "emit a jappie-lang program as llvm IR"))
   ,
   command "compile"
