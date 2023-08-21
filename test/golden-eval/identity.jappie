@@ -1,6 +1,7 @@
 ; comment
 ;
 ; identity
+; λx . x
 ([x] x)
 
 
