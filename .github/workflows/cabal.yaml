@@ -1,6 +1,4 @@
-name: cabal CI
-
-on: [push, pull_request]
+on: [pull_request]
 jobs:
   build:
 
@@ -9,18 +7,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ghc: ['9.4.1', '9.2.4', '9.0.1', '8.10.7']
-        os: [ubuntu-latest]
+        ghc: # should mirror current stable releases: https://www.haskell.org/ghc/download.html
+          - '9.6'
+          - '9.4'
+          - '9.2'
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: haskell/actions/setup@v1
+    - uses: actions/checkout@v3
+    - uses: haskell/actions/setup@v2 # https://github.com/haskell/actions/tree/main/setup#haskellactionssetup
       with:
         ghc-version: ${{ matrix.ghc }}
-        cabal-version: '3.6'
 
     - name: Cabal cache
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       env:
         cache-name: cache-cabal
       with:
